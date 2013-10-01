@@ -1,5 +1,6 @@
 require "spec_helper"
 
+# specs for embedded model with rating
 describe Comment do
 
   before(:each) do
@@ -55,17 +56,17 @@ describe Comment do
         it { expect { @comment1.rate 9, @sally }.to raise_error() }
       end
 
-      describe "when using negative values" do
-        let(:num) { -rand(1..5) }
-
-        it { expect { @comment1.rate num, @sally }.to change { @comment1.rate }.by(num) }
-        it { expect { @comment1.rate -1, @sally, -num }.to change { @comment1.rate }.by(num) }
+      describe "when using positive values" do
+        let(:num) { rand(1..5) }
+        let(:exp) { ((num + 2) / 2.0) - 2 }
+        it { expect { @comment1.rate num, @sally }.to change { @comment1.rate }.by(exp) }
       end
     end
 
     describe "#rate_by" do
       describe "for Bob" do
-        specify { @comment1.rate_by(@bob).should be_true should eq 2 }
+        specify { @comment1.rate_by?(@bob).should be_true }
+        specify { @comment1.rate_by(@bob).should eq 2 }
       end
       describe "for Bob" do
         specify { @comment2.rate_by(@bob).should be_nil }
@@ -77,7 +78,7 @@ describe Comment do
         end
 
         describe "for Alice" do
-          specify { @comment1.rate_by(@alice).should be_true }
+          specify { @comment1.rate_by?(@alice).should be_true }
         end
       end
 
@@ -133,12 +134,12 @@ describe Comment do
         @comment1.unrate! @sally
       end
 
-      it "should have null #rate_count" do
+      it "should have zero #rate_count" do
         @comment1.rate_count.should eql 0
       end
 
-      it "should have null #rates" do
-        @comment1.rates.should be_nil
+      it "should have null #rate" do
+        @comment1.rate.should be_nil
       end
     end
   end
@@ -201,16 +202,18 @@ describe Comment do
 
 
     describe "#highest_rate" do
+      # count is broken on embedded models
       it "should return proper count of comments" do
-        @post1.comments.highest_rate(1).count(true).should eql 1
+        @post1.comments.highest_rate.limit(1).to_a.length.should eq 1
       end
 
       it "should return proper count of comments" do
-        @post1.comments.highest_rate(10).count(true).should eql 5
+        # includes only with rating
+        @post1.comments.highest_rate.limit(10).to_a.length.should eq 2
       end
 
       it "should return proper document" do
-        @post1.comments.highest_rate(1).first.content.should eql "c1"
+        @post1.comments.highest_rate.limit(1).first.content.should eql "c1"
       end
     end
   end

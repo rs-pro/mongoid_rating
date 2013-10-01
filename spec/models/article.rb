@@ -3,5 +3,5 @@ class Article
 
   field :name
 
-  rateable :overall, range: -5..5, eval: false
+  rateable :overall, range: -5..5
 end

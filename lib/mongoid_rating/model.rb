@@ -37,18 +37,18 @@ module Mongoid
 
           # average rate value
           avg = "#{field}_average".to_sym
-          field avg, type: Float, default: 0
+          field avg, type: Float
           savg = avg.inspect
 
           class_eval <<-RUBY, __FILE__, __LINE__+1
             scope :#{field}_by, ->(rater) {
-              where("#{field}.rater_id" => rater.id, "#{field}.rater_class" => rater.class.to_s)
+              where("#{field}_data.rater_id" => rater.id, "#{field}_data.rater_type" => rater.class.to_s)
             }
             scope :#{field}_in, ->(range) {
               where(#{savg}.gte => range.begin, #{savg}.lte => range.end)
             }
-            scope :highest_#{field}, ->(limit=10) {
-              order_by([#{savg}, :desc]).limit(limit)
+            scope :highest_#{field}, -> {
+              where(#{savg}.ne => nil).order_by([#{savg}, :desc])
             }
 
             def #{field}!(value, rater)
@@ -61,12 +61,11 @@ module Mongoid
                 #{field}_data.where(rater_id: rater.id).destroy_all
                 #{field}_data.create!(rater: rater, value: value)
                 collection.database.session.cluster.with_primary do
-                  collection.database.command({
+                  doc = collection.database.command({
                     eval: 'function(id) { 
                       var oid = ObjectId(id);
                       var doc = db.' + collection.name + '.findOne( { _id : oid } );
                       if (doc) {
-                        printjson(doc)
                         doc.#{field}_count = 0
                         doc.#{field}_sum = 0;
                         doc.#{field}_data.forEach(function(fd) {
@@ -78,12 +77,18 @@ module Mongoid
                         db.' + collection.name + '.save(doc);
                         return doc;
                       } else {
-                        print("no doc")
                         return false;
                       }
                     }',
                     args: [ id.to_s ]
                   })
+                  self.#{field}_count = doc[:retval]["#{field}_count"]
+                  self.#{field}_sum = doc[:retval]["#{field}_sum"]
+                  self.#{field}_average = doc[:retval]["#{field}_average"]
+                  remove_change(:#{field}_count)
+                  remove_change(:#{field}_sum)
+                  remove_change(:#{field}_average)
+
                 end
               else
                 un#{field}!(rater)
@@ -129,7 +134,7 @@ module Mongoid
 
             def raw_#{field}_by(rater)
               #{field}_data.select do |rate|
-                rate[:rater_id] == rater.id && rate[:rater_class] == rater.class
+                rate[:rater_id] == rater.id && rate[:rater_type] == rater.class.name
               end.first
             end
 
@@ -150,7 +155,7 @@ module Mongoid
               if rate.nil?
                 nil
               else
-                rate.rate
+                rate.value
               end
             end
             def #{field}_by?(rater)

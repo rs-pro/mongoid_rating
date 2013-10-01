@@ -4,6 +4,7 @@ describe Article do
 
   before(:each) do
     @bob = User.create :name => "Bob"
+    @sally = User.create :name => "Sally"
     @alice = User.create :name => "Alice"
     @article = Article.create :name => "Article"
   end
@@ -31,9 +32,16 @@ describe Article do
     end
 
     describe "#overall" do
-      it "should track #overalls properly" do
+      it "should track #overall properly" do
         @article.overall! 1, @sally
         @article.overall_count.should eql 2
+        @article.overall.should eql 1.0
+      end
+
+      it "should not mark fields as dirty" do
+        @article.overall_count_changed?.should be_false
+        @article.overall_sum_changed?.should be_false
+        @article.overall_average_changed?.should be_false
       end
 
       it "should limit #overalls by user properly" do
@@ -218,6 +226,7 @@ describe Article do
     describe "#overall_count" do
       specify { @f_article.overall_count.should eql 2 }
     end
+  end
 
   describe "#scopes" do
     before (:each) do
@@ -263,35 +272,29 @@ describe Article do
       end
 
       it "should return proper count of articles with rating 4..5" do
-        article.with_rating(4..5).size.should eql 2
+        article.overall_in(4..5).to_a.length.should eql 2
       end
 
       it "should return proper count of articles with rating 0..2" do
-        article.with_rating(0..2).size.should eql 2
+        article.overall_in(0..2).to_a.length.should eql 2
       end
 
       it "should return proper count of articles with rating 0..5" do
-        article.with_rating(0..5).size.should eql 4
+        article.overall_in(0..5).to_a.length.should eql 4
       end
     end
 
     describe "#highest_overall" do
       it "should return proper count of articles" do
-        #mongoid has problems with returning count of documents (https://github.com/mongoid/mongoid/issues/817)
-        articles_count = 0
-        article.highest_overall(1).each {|x| posts_count+=1 }
-        articles_count.should eql 1
+        article.highest_overall.limit(1).count(true).should eq 1
       end
 
       it "should return proper count of articles" do
-        #mongoid has problems with returning count of documents (https://github.com/mongoid/mongoid/issues/817)
-        articles_count = 0
-        article.highest_overall(10).each {|x| posts_count+=1 }
-        articles_count.should eql 5
+        article.highest_overall.limit(10).count(true).should eq 4
       end
 
       it "should return proper document" do
-        article.highest_overall(1).first.name.should eql "Article 1"
+        article.highest_overall.limit(1).first.name.should eql "Article 1"
       end
     end
   end

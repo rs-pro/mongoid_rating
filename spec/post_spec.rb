@@ -221,6 +221,7 @@ describe Post do
     describe "#rate_count" do
       specify { @f_post.rate_count.should eql 2 }
     end
+  end
 
   describe "#scopes" do
     before (:each) do
