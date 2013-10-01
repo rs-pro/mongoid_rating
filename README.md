@@ -73,7 +73,7 @@ Posts rated by user:
 (c) 2013 glebtv, MIT license
 
 Partially based on
-(mongoid-rateable)[https://github.com/proton/mongoid_rateable]
+[mongoid-rateable](https://github.com/proton/mongoid_rateable)
 which is Copyright (c) 2011 Peter Savichev (proton), MIT license
 
 ## Contributing
