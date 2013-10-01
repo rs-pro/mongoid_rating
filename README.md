@@ -20,6 +20,14 @@ Or install it yourself as:
 
 TODO: Write usage instructions here
 
+## Credits
+
+(c) 2013 glebtv, MIT license
+
+Partially based on
+(mongoid-rateable)[https://github.com/proton/mongoid_rateable]
+which is Copyright (c) 2011 Peter Savichev (proton), MIT license
+
 ## Contributing
 
 1. Fork it
@@ -27,3 +35,4 @@ TODO: Write usage instructions here
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
+
