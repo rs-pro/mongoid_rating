@@ -8,13 +8,8 @@ rvm:
   - 1.9.3
   - 2.0.0
   - jruby-19mode
-  - rbx-19mode
 
 gemfile:
   - Gemfile
   - gemfiles/mongoid-4.0.gemfile
 
-matrix:
-  exclude:
-    - rvm: rbx-19mode
-      gemfile: gemfiles/mongoid-4.0.gemfile
