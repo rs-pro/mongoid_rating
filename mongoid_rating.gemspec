@@ -8,9 +8,9 @@ Gem::Specification.new do |spec|
   spec.version       = MongoidRating::VERSION
   spec.authors       = ["glebtv"]
   spec.email         = ["glebtv@gmail.com"]
-  spec.description   = %q{TODO: Write a gem description}
-  spec.summary       = %q{TODO: Write a gem summary}
-  spec.homepage      = ""
+  spec.description   = %q{Star rating for Mongoid}
+  spec.summary       = %q{Star rating for Mongoid}
+  spec.homepage      = "https://github.com/rs-pro/mongoid_rating"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)

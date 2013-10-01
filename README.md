@@ -1,6 +1,10 @@
 # MongoidRating
 
-TODO: Write a gem description
+Star rating for Mongoid
+Allows:
+  - Multiple rating fields per model
+  - Float rating marks (users can give 4.5 stars)
+  - Accurate concurrent rating updates with db.eval
 
 ## Installation
 
@@ -18,7 +22,43 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+make model rateable:
+  class Post
+    include Mongoid::Document
+    rateable :rate
+  end
+  ps = Post.create()
+  user = User.create()
+
+rate and unrate:
+  
+  ps.rate 5, user
+  ps.unrate, user
+
+Get current rating
+
+  ps.rate
+   => 5.0 
+  ps.rate_by(user)
+  => 5 
+  
+Check if user rated:
+
+  ps.rate_by?(user)
+  => true 
+
+Scopes: 
+
+  Post.rate_in(2..5)
+  Post.rate_in(2..5).first
+  => #<Post rate_count: 1, rate_sum: 5.0, rate_average: 5.0> 
+  Post.rate_in(2..3).first
+  => nil 
+
+Posts rated by user:
+
+  Post.rate_by(user).first
+  => #<Post rate_count: 1, rate_sum: 5.0, rate_average: 5.0> 
 
 ## Credits
 
