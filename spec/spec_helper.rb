@@ -8,11 +8,10 @@ require "rspec"
 require "mongoid"
 require "database_cleaner"
 
-require "simplecov"
-SimpleCov.start
+require 'coveralls'
+Coveralls.wear!
 
 require "mongoid_rating"
-
 
 Dir["#{MODELS}/*.rb"].each { |f| require f }
 
