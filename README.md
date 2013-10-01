@@ -3,6 +3,7 @@
 [![Gem Version](https://badge.fury.io/rb/mongoid_rating.png)](http://badge.fury.io/rb/mongoid_rating)
 [![Dependency Status](https://gemnasium.com/rs-pro/mongoid_rating.png)](https://gemnasium.com/rs-pro/mongoid_rating)
 [![Build Status](https://travis-ci.org/rs-pro/mongoid_rating.png?branch=master)](https://travis-ci.org/rs-pro/mongoid_rating)
+[![Coverage Status](https://coveralls.io/repos/rs-pro/mongoid_rating/badge.png)](https://coveralls.io/r/rs-pro/mongoid_rating)
 
 ## Features
 
