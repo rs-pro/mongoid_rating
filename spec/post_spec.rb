@@ -7,10 +7,10 @@ describe Post do
     @alice = User.create :name => "Alice"
     @sally = User.create :name => "Sally"
     @post = Post.create :name => "Announcement"
-    @post = Article.create :name => "Article"
+    @article = Article.create :name => "Article"
   end
 
-  subject { @comment1 }
+  subject { @post }
   it { should respond_to :rate }
   it { should respond_to :rate! }
   it { should respond_to :unrate! }
@@ -41,7 +41,7 @@ describe Post do
 
       it "should limit #rates by user properly" do
         @post.rate! 5, @bob
-        @post.rate.should eql 5
+        @post.rate.should eql 5.0
       end
 
       context "when rate_value in rating range" do
@@ -52,36 +52,34 @@ describe Post do
         it { expect { @post.rate 17, @sally }.to raise_error() }
         it { expect { @post.rate -17, @sally }.to raise_error() }
       end
-
-      describe "when using negative values" do
-        let(:num) { -rand(1..100) }
-
-        it { expect { @post.rate num, @sally }.to change { @post.overall }.by(num) }
-        it { expect { @post.rate -1, @sally, -num }.to change { @post.overall }.by(num) }
-      end
     end
 
     describe "#rated?" do
       describe "for Bob" do
         specify { @post.rate_by?(@bob).should be_true }
       end
-      describe "for Bob" do
-        specify { @post.rate_by?(@bob).should be_false }
+      describe "for Sally" do
+        specify { @post.rate_by?(@sally).should be_false }
       end
 
       describe "when rated by someone else" do
         before do
           @post.rate 1, @alice
         end
-
+        describe "for Bob" do
+          specify { @post.rate_by?(@bob).should be_true }
+        end
+        describe "for Sally" do
+          specify { @post.rate_by?(@sally).should be_false }
+        end
         describe "for Alice" do
-          specify { @post.rated_by?(@alice).should be_true }
+          specify { @post.rate_by?(@alice).should be_true }
         end
       end
 
       describe "when not rated by someone else" do
         describe "for Sally" do
-          specify { @post.rated_by?(@sally).should be_false }
+          specify { @post.rate_by?(@sally).should be_false }
         end
       end
     end
@@ -93,12 +91,8 @@ describe Post do
         @post.rate_count.should eql 0
       end
 
-      it "should have null #rates" do
-        @post.rates.should eql 0
-      end
-
-      it "should be unrated" do
-        @post.rated?.should be_false
+      it "should have null #rate" do
+        @post.rate.should be_nil
       end
     end
 
@@ -109,61 +103,19 @@ describe Post do
       end
     end
 
-    describe "#rating" do
+    describe "#rate" do
       it "should calculate the average rate" do
         @post.rate 4, @sally
-        @post.rating.should eq 2.5
-      end
-
-      it "should calculate the average rate if the result is zero" do
-        @post.rate -1, @sally
-        @post.rating.should eq 0.0
+        @post.rate.should eq 2.5
       end
     end
 
-    describe "#previous_rating" do
-      it "should store previous value of the average rate" do
-        @post.rate 4, @sally
-        @post.previous_rating.should eq 1.0
-      end
-
-      it "should store previous value of the average rate after two changes" do
-        @post.rate -1, @sally
-        @post.rate 4, @sally
-        @post.previous_rating.should eq 0.0
-      end
-    end
-
-    describe "#rating_delta" do
-      it "should calculate delta of previous and new ratings" do
-        @post.rate 4, @sally
-        @post.rating_delta.should eq 1.5
-      end
-
-      it "should calculate delta of previous and new ratings" do
-        @post.rate -1, @sally
-        @post.rating_delta.should eq -1.0
-      end
-    end
-
-    describe "#unweighted_rating" do
-      it "should calculate the unweighted average rate" do
-        @post.rate 4, @sally
-        @post.unweighted_rating.should eq 2.5
-      end
-
-      it "should calculate the unweighted average rate if the result is zero" do
-        @post.rate -1, @sally
-        @post.unweighted_rating.should eq 0.0
-      end
-    end
-
-    describe "#user_mark" do
+    describe "#rate_by" do
       describe "should give mark" do
-        specify { @post.user_mark(@bob).should eq 1}
+        specify { @post.rate_by(@bob).should eq 1}
       end
       describe "should give nil" do
-        specify { @post.user_mark(@alice).should be_nil}
+        specify { @post.rate_by(@alice).should be_nil}
       end
     end
   end
@@ -194,19 +146,14 @@ describe Post do
 
   context "when saving the collection" do
     before (:each) do
-      @post.rate 8, @bob
-      @post.rate -10, @sally
+      @post.rate 3, @bob
       @post.save
       @f_post = Post.where(:name => "Announcement").first
     end
 
-    describe "#rated_by?" do
+    describe "#rate_by?" do
       describe "for Bob" do
         specify { @f_post.rate_by?(@bob).should be_true }
-      end
-
-      describe "for Sally" do
-        specify { @f_post.rate_by?(@sally).should be_true }
       end
 
       describe "for Alice" do
@@ -215,11 +162,11 @@ describe Post do
     end
 
     describe "#rate" do
-      specify { @f_post.rate.should eql -2 }
+      specify { @f_post.rate.should eql 3.0 }
     end
 
     describe "#rate_count" do
-      specify { @f_post.rate_count.should eql 2 }
+      specify { @f_post.rate_count.should eql 1 }
     end
   end
 
@@ -231,51 +178,39 @@ describe Post do
       @post3 = Post.create(:name => "Post 3")
       @post4 = Post.create(:name => "Post 4")
       @post5 = Post.create(:name => "Post 5")
-      @post1.rate_and_save 5, @sally
-      @post1.rate_and_save 3, @bob
-      @post4.rate_and_save 1, @sally
+      @post1.rate 5, @sally
+      @post1.rate 3, @bob
+      @post4.rate 1, @sally
     end
 
-    describe "#unrated" do
-      it "should return proper count of unrated posts" do
-        Post.unrated.size.should eql 3
-      end
-    end
-
-    describe "#rated" do
-      it "should return proper count of rated posts" do
-        Post.rated.size.should eql 2
-      end
-    end
-
-    describe "#rated_by" do
+    describe "#rate_by scope" do
       it "should return proper count of posts rated by Bob" do
-        Post.rated_by(@bob).size.should eql 1
+        Post.rate_by(@bob).size.should eql 1
       end
 
       it "should return proper count of posts rated by Sally" do
-        Post.rated_by(@sally).size.should eql 2
+        Post.rate_by(@sally).size.should eql 2
       end
     end
 
     describe "#with_rating" do
       before (:each) do
-        @post1.rate_and_save 4, @alice
-        @post2.rate_and_save 2, @alice
-        @post3.rate_and_save 5, @alice
-        @post4.rate_and_save 2, @alice
+        @post1.rate 4, @alice
+        @post2.rate 2, @alice
+        @post3.rate 5, @alice
+        @post4.rate 2, @alice
       end
 
       it "should return proper count of posts with rating 4..5" do
-        Post.with_rating(4..5).size.should eql 2
+        Post.rate_in(4..5).size.should eql 2
       end
 
       it "should return proper count of posts with rating 0..2" do
-        Post.with_rating(0..2).size.should eql 2
+        Post.rate_in(0..2).size.should eql 2
       end
 
       it "should return proper count of posts with rating 0..5" do
-        Post.with_rating(0..5).size.should eql 4
+        Post.rate_in(0..5).size.should eql 4
       end
     end
 
@@ -283,19 +218,19 @@ describe Post do
       it "should return proper count of posts" do
         #mongoid has problems with returning count of documents (https://github.com/mongoid/mongoid/issues/817)
         posts_count = 0
-        Post.highest_rated(1).each {|x| posts_count+=1 }
+        Post.highest_rate.limit(1).each {|x| posts_count+=1 }
         posts_count.should eql 1
       end
 
       it "should return proper count of posts" do
         #mongoid has problems with returning count of documents (https://github.com/mongoid/mongoid/issues/817)
         posts_count = 0
-        Post.highest_rated(10).each {|x| posts_count+=1 }
-        posts_count.should eql 5
+        Post.highest_rate.limit(10).each {|x| posts_count+=1 }
+        posts_count.should eql 2
       end
 
       it "should return proper document" do
-        Post.highest_rated(1).first.name.should eql "Post 1"
+        Post.highest_rate.limit(1).first.name.should eql "Post 1"
       end
     end
   end

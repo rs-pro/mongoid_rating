@@ -72,7 +72,6 @@ module Mongoid
                           doc.#{field}_sum += fd.value;
                           doc.#{field}_count += 1;
                         })
-                        printjson(doc)
                         doc.#{field}_average = doc.#{field}_sum /doc.#{field}_count;
                         db.' + collection.name + '.save(doc);
                         return doc;
@@ -88,7 +87,6 @@ module Mongoid
                   remove_change(:#{field}_count)
                   remove_change(:#{field}_sum)
                   remove_change(:#{field}_average)
-
                 end
               else
                 un#{field}!(rater)
