@@ -34,6 +34,8 @@ make model rateable:
     class Post
       include Mongoid::Document
       rateable :rate
+      # needed if you use rails_admin so it would not complain
+      accepts_nested_attributes_for :rate_data
     end
     ps = Post.create()
     user = User.create()
