@@ -59,6 +59,7 @@ Check if user rated:
 
 Scopes: 
 
+    Post.highest_rate
     Post.rate_in(2..5)
     Post.rate_in(2..5).first
     => #<Post rate_count: 1, rate_sum: 5.0, rate_average: 5.0> 
