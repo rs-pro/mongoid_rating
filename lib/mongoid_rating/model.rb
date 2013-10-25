@@ -47,6 +47,10 @@ module Mongoid
             scope :#{field}_in, ->(range) {
               where(#{savg}.gte => range.begin, #{savg}.lte => range.end)
             }
+
+            scope :by_#{field}, -> {
+              order_by([#{savg}, :desc])
+            }
             scope :highest_#{field}, -> {
               where(#{savg}.ne => nil).order_by([#{savg}, :desc])
             }

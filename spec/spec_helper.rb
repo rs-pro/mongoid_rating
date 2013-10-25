@@ -10,13 +10,12 @@ require "rubygems"
 require "rspec"
 require "mongoid"
 require "database_cleaner"
-
 require "mongoid_rating"
 
 Dir["#{MODELS}/*.rb"].each { |f| require f }
 
 Mongoid.configure do |config|
-  config.connect_to "mongoid_rateable_test"
+  config.connect_to "mongoid_rating_test"
 end
 Mongoid.logger = Logger.new($stdout)
 
