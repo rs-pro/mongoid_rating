@@ -39,7 +39,7 @@ describe Article do
 
       describe "#overall" do
         it "should track #overall properly" do
-          @article.overall! 1, @sally
+          @article.overall!(1, @sally)
           @article.overall_count.should eql 2
           @article.overall.should eql 1.0
         end
@@ -51,17 +51,17 @@ describe Article do
         end
 
         it "should limit #overalls by user properly" do
-          @article.overall! 5, @bob
+          @article.overall!(5, @bob)
           @article.overall.should eql 5.0
         end
 
         context "when overall_value in rating range" do
-          it { expect { @article.overall 1, @sally }.not_to raise_error }
+          it { expect { @article.overall(1, @sally) }.not_to raise_error }
         end
 
         context "when overall_value not in rating range" do
-          it { expect { @article.overall 17, @sally }.to raise_error() }
-          it { expect { @article.overall -17, @sally }.to raise_error() }
+          it { expect { @article.overall(17, @sally) }.to raise_error() }
+          it { expect { @article.overall(-17, @sally) }.to raise_error() }
         end
 
         describe "when using positive values" do
@@ -133,7 +133,7 @@ describe Article do
         end
 
         it "should calculate the average overall if the result is zero" do
-          @article.overall -1, @sally
+          @article.overall(-1, @sally)
           @article.overall.should eq 0.0
         end
       end
@@ -165,26 +165,26 @@ describe Article do
 
     context "when saving the collection" do
       before (:each) do
-        @article.overall 3, @bob
-        @article.overall -5, @sally
+        @article.overall(3, @bob)
+        @article.overall(-5, @sally)
         @article.save
         @f_article = Article.where(:name => "Article").first
       end
 
       it "disallows incorrect rates" do
-        expect { @article.overall 8, @bob }.to raise_error
-        expect { @article.overall -10, @sally }.to raise_error
+        expect { @article.overall(8, @bob) }.to raise_error
+        expect { @article.overall(-10, @sally) }.to raise_error
       end
 
       describe "#overall_by?" do
         describe "for Bob" do
           specify { @f_article.overall_by?(@bob).should be_true }
-          specify { @f_article.overall_by(@bob).should eq 3 }
+          specify { @f_article.overall_by(@bob).should eq(3) }
         end
 
         describe "for Sally" do
           specify { @f_article.overall_by?(@sally).should be_true }
-          specify { @f_article.overall_by(@sally).should eq -5 }
+          specify { @f_article.overall_by(@sally).should eq(-5) }
         end
 
         describe "for Alice" do
@@ -194,11 +194,11 @@ describe Article do
       end
 
       describe "#overall" do
-        specify { @f_article.overall.should eql -1.0 }
+        specify { @f_article.overall.should eq(-1.0) }
       end
 
       describe "#overall_count" do
-        specify { @f_article.overall_count.should eql 2 }
+        specify { @f_article.overall_count.should eq(2) }
       end
     end
   end
@@ -268,14 +268,12 @@ describe Article do
       describe '#by_overall' do
         it "should return proper count of articles" do
           Article.by_overall.limit(10).count(true).should eq 5
-          Article.by_overall.to_a.should eq [@article3, @article1, @article2, @article4, @article5]
         end
 
         it 'returns articles in proper order' do
-
+          Article.by_overall.to_a.should eq [@article3, @article1, @article2, @article4, @article5]
         end
       end
     end
-
   end
 end

@@ -178,12 +178,16 @@ describe Post do
       @post3 = Post.create(:name => "Post 3")
       @post4 = Post.create(:name => "Post 4")
       @post5 = Post.create(:name => "Post 5")
-      @post1.rate 5, @sally
-      @post1.rate 3, @bob
-      @post4.rate 1, @sally
     end
 
+    
     describe "#rate_by scope" do
+      before :each do
+        @post1.rate 5, @sally
+        @post1.rate 3, @bob
+        @post4.rate 1, @sally
+      end
+
       it "should return proper count of posts rated by Bob" do
         Post.rate_by(@bob).size.should eql 1
       end
@@ -193,12 +197,17 @@ describe Post do
       end
     end
 
-    describe "#with_rating" do
+    context 'rates' do
       before (:each) do
         @post1.rate 4, @alice
         @post2.rate 2, @alice
         @post3.rate 5, @alice
         @post4.rate 2, @alice
+      end
+
+      it '#highest_rate' do
+        Post.highest_rate.count.should eq 4
+        Post.highest_rate.first.id.should eq @post3.id
       end
 
       it "should return proper count of posts with rating 4..5" do
@@ -212,25 +221,24 @@ describe Post do
       it "should return proper count of posts with rating 0..5" do
         Post.rate_in(0..5).size.should eql 4
       end
-    end
 
-    describe "#highest_rated" do
-      it "should return proper count of posts" do
-        #mongoid has problems with returning count of documents (https://github.com/mongoid/mongoid/issues/817)
-        posts_count = 0
-        Post.highest_rate.limit(1).each {|x| posts_count+=1 }
-        posts_count.should eql 1
+      describe "#highest_rate" do
+        it "should return proper document" do
+          Post.highest_rate.limit(1).first.name.should eql "Post 3"
+        end
       end
 
-      it "should return proper count of posts" do
-        #mongoid has problems with returning count of documents (https://github.com/mongoid/mongoid/issues/817)
-        posts_count = 0
-        Post.highest_rate.limit(10).each {|x| posts_count+=1 }
-        posts_count.should eql 2
-      end
+      describe '#by_rate' do
+        it "should return proper count of posts" do
+          Post.by_rate.limit(10).count(true).should eq 5
+        end
 
-      it "should return proper document" do
-        Post.highest_rate.limit(1).first.name.should eql "Post 1"
+        it 'returns articles in proper order' do
+          @post5.rate.should be_nil
+          @post5[:rate_average].should be_nil
+
+          Post.by_rate.to_a.should eq [@post3, @post1, @post2, @post4, @post5]
+        end
       end
     end
   end
