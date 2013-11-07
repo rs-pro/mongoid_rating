@@ -9,17 +9,15 @@ module Mongoid
         # @param [Hash] options a hash containings:
         # 
         # rateable :overall, range: -5..5
-        #
-        # Disable atomic eval (in case it's disabled on the database side)
-        # rateable :design, range: -5..5, average: false
         # 
         # Disable average completely
+        # rateable :design, range: -5..5, average: false
+        #
         # rateable :quality, range: -5..5, average: true
         def rateable(field, options = {})
           options = {
             range: 1..5,
             rerate: true,
-            eval: true,
             counters: true,
             float: true
           }.merge(options)
@@ -61,44 +59,11 @@ module Mongoid
                 raise "bad vote value"
               end
               raise "can't rate" unless can_#{field}?(rater)
-              if #{options[:eval]}
-                #{field}_data.where(rater_id: rater.id).destroy_all
+              un#{field}!(rater)
+              atomically do
+                inc("#{field}_count" => 1, "#{field}_sum" => value)
                 #{field}_data.create!(rater: rater, value: value)
-                collection.database.session.cluster.with_primary do
-                  doc = collection.database.command({
-                    eval: 'function(id) { 
-                      var oid = ObjectId(id);
-                      var doc = db.' + collection.name + '.findOne( { _id : oid } );
-                      if (doc) {
-                        doc.#{field}_count = 0
-                        doc.#{field}_sum = 0;
-                        doc.#{field}_data.forEach(function(fd) {
-                          doc.#{field}_sum += fd.value;
-                          doc.#{field}_count += 1;
-                        })
-                        doc.#{field}_average = doc.#{field}_sum /doc.#{field}_count;
-                        db.' + collection.name + '.save(doc);
-                        return doc;
-                      } else {
-                        return false;
-                      }
-                    }',
-                    args: [ id.to_s ]
-                  })
-                  self.#{field}_count = doc[:retval]["#{field}_count"]
-                  self.#{field}_sum = doc[:retval]["#{field}_sum"]
-                  self.#{field}_average = doc[:retval]["#{field}_average"]
-                  remove_change(:#{field}_count)
-                  remove_change(:#{field}_sum)
-                  remove_change(:#{field}_average)
-                end
-              else
-                un#{field}!(rater)
-                atomically do
-                  inc("#{field}_count" => 1, "#{field}_sum" => value)
-                  #{field}_data.create!(rater: rater, value: value)
-                  set("#{field}_average" => calc_#{field}_avg)
-                end
+                set("#{field}_average" => calc_#{field}_avg)
               end
             end
             def calc_#{field}_avg

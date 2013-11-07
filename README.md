@@ -11,7 +11,6 @@
 
   - Multiple rating fields per model
   - Float rating marks (users can give 4.5 stars)
-  - Accurate concurrent rating updates with db.eval
 
 ## Installation
 
