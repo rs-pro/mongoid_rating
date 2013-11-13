@@ -52,6 +52,16 @@ describe Post do
         it { expect { @post.rate 17, @sally }.to raise_error() }
         it { expect { @post.rate -17, @sally }.to raise_error() }
       end
+
+      it 'allows string rate' do
+        @post.rate! '5', @bob
+        @post.rate.should eql 5.0
+      end
+
+      it 'allows string rate' do
+        @post.rate! '3.2', @bob
+        @post.rate.should eql 3.2
+      end
     end
 
     describe "#rated?" do

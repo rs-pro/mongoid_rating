@@ -12,8 +12,10 @@ module Mongoid
         # 
         # Disable average completely
         # rateable :design, range: -5..5, average: false
-        #
         # rateable :quality, range: -5..5, average: true
+        #
+        # float: whether to allow non-integer rates (default true)
+        #
         def rateable(field, options = {})
           options = {
             range: 1..5,
@@ -54,7 +56,11 @@ module Mongoid
             }
 
             def #{field}!(value, rater)
-              value = value.to_i unless #{options[:float]}
+              if #{options[:float]}
+               value = value.to_f
+              else
+               value = value.to_i 
+              end
               unless (#{options[:range]}).include?(value)
                 raise "bad vote value"
               end

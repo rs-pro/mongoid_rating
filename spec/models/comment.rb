@@ -1,7 +1,7 @@
 class Comment
   include Mongoid::Document
 
-  rateable :rate, eval: false
+  rateable :rate, float: false
 
   embedded_in :post
 

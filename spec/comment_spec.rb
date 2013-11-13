@@ -25,10 +25,21 @@ describe Comment do
     it "should contain an array of rating marks" do
       @comment1.rate_values.should be_an_instance_of Array
       @comment1.rate_values.should eq []
+
       @comment1.rate! 2, @bob
       @comment1.rate_values.should eq [2]
+    end
+    
+    it 'allows string rate' do
+      @comment1.rate! '3', @bob
+      @comment1.rate_values.should eq [3]
+    end
+
+    it 'disallows float' do
       @comment1.rate! 2.5, @bob
-      @comment1.rate_values.should eq [2.5]
+      @comment1.rate_values.should eq [2]
+      @comment1.rate! '2.7', @bob
+      @comment1.rate_values.should eq [2]
     end
   end
 
