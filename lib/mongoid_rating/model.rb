@@ -16,13 +16,16 @@ module Mongoid
         #
         # float: whether to allow non-integer rates (default true)
         #
-        def rateable(field, options = {})
+        def rateable(field, opt = {})
           options = {
             range: 1..5,
             rerate: true,
             counters: true,
-            float: true
-          }.merge(options)
+            float: true,
+          }.merge(opt)
+          options[:no_rate] ||= options[:float] ? '0.0' : '0'
+          options[:format]  ||= options[:float] ? '%.1f' : '%d'
+
           field = field.to_sym
           sfield = field.inspect
 
@@ -54,6 +57,18 @@ module Mongoid
             scope :highest_#{field}, -> {
               where(#{savg}.ne => nil).order_by([#{savg}, :desc])
             }
+
+            # return user's rate if rated otherwise formatted rate value
+            # good for Raty JS plugin
+            def fmt_#{field}(user = nil)
+              if !user.nil? && #{field}_by?(user)
+                #{options[:format].inspect} % #{field}_by(user)
+              elsif #{field}.nil?
+                #{options[:no_rate].class.name == 'String' ? options[:no_rate].inspect : options[:no_rate]}
+              else
+                #{options[:format].inspect} % #{field}
+              end
+            end
 
             def #{field}!(value, rater)
               if #{options[:float]}

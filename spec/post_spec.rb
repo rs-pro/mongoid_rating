@@ -28,6 +28,23 @@ describe Post do
     end
   end
 
+  it 'allows string rate' do
+    @post.rate! '5', @bob
+    @post.rate.should eql 5.0
+  end
+
+  it 'allows string rate' do
+    @post.rate! '3.2', @bob
+    @post.rate.should eql 3.2
+  end
+  it '#fmt_rate' do
+    @post.fmt_rate.should eq '0.0'
+    @post.rate! '3.2', @bob
+    @post.fmt_rate.should eq '3.2'
+    @post.rate! '3', @bob
+    @post.fmt_rate.should eq '3.0'
+  end
+
   context "when rated" do
     before (:each) do
       @post.rate! 1, @bob
@@ -53,15 +70,6 @@ describe Post do
         it { expect { @post.rate -17, @sally }.to raise_error() }
       end
 
-      it 'allows string rate' do
-        @post.rate! '5', @bob
-        @post.rate.should eql 5.0
-      end
-
-      it 'allows string rate' do
-        @post.rate! '3.2', @bob
-        @post.rate.should eql 3.2
-      end
     end
 
     describe "#rated?" do

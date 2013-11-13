@@ -41,6 +41,12 @@ describe Comment do
       @comment1.rate! '2.7', @bob
       @comment1.rate_values.should eq [2]
     end
+
+    it 'fmt_rate' do
+      @comment1.fmt_rate.should eq '0'
+      @comment1.rate! '2.0', @bob
+      @comment1.fmt_rate.should eq '2'
+    end
   end
 
   context "when rated" do
